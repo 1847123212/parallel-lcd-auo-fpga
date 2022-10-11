@@ -1,32 +1,40 @@
-# Parallel-Interface LCD Driver for AUO A030DW02 V0 using FPGA
+# Parallel-Interface LCD Driver for AUO A030DW01/02 using FPGA
 
-Caution: this project is in a working process and not been done. Part of the document has not finished.
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-This project is managing to drive LCD(AUO A030DW02 V0, Part-No. 59.03A33.001) using Altera Cyclone IV EP4CE10F17C8N FPGA.
+This project is managing to drive LCD(AUO A030DW01 03a16 and A030DW02 03a33) using Altera Cyclone IV EP4CE10F17C8N FPGA.<br>
+The two types of LCD will be called as `A030DW0x` below.<br>
 
+<img src="monazite-logo-lofi.png" width=80><br>
 Author: jlywxy (jlywxy@outlook.com)<br>
-Document Version: 1.0
+Document Version: 1.1
+
+- --
+
+## Availability
+
+1. The test method of availability in this project is to show color gradient.<br>
+
+<img src="demo1.png" width=200><br>
+
+2. Since this LCM need external capacitor connected, a PCB is made to convert connector to FPGA, include power management.<br>(For schematic pdf, look into directory <a href="pcb">pcb</a>)<br>
+<img src="pcb-schematic.png" width=200>
+<img src="pcb-image.png" width=200><br>
+
 - --
 
 ## Overview of the LCM Interface 
 
 ### 1. Display Interface
 
+A030DW01 and A030DW02 shares the same info of specification document.<br>
 This LCM supports different interfaces: UPS051/052(8-bit RGB), CCIR656, YUV720/640.
 ```
-AUO - A030DW02 V0 (Part-No. 59.03A33.001)
+AUO - A030DW0x
 
 Electrical-Level       | Speed         | Wires
 --------------------------------------------------
 3.3v-TTL with 3.3v VDD | 24.535/27 MHz | SPI+[HSYNC+VSYNC+CLK+DATA8]
 
 ```
-* This display will not use DE signal.
 
 ### 2. Backlight Interface
 
@@ -34,23 +42,21 @@ This LCM requires 9.6v single power with 20mA current with selectable internal b
 
 ### 3. Connector
 
-The part number of Mating connector is not shown in specification sheet. This project is using AYF333935 of Panasonic connector, which has 39pin with crossed 0.3mm interval.
+The part number of Mating connector is not shown in specification sheet. This project is using FH26W of Hirose connector, which has 39pin with crossed 0.3mm interval and bottom contact surface.
 ```
-1 3 5 7 9       insert direction: v
+==============
+1 3 5 7 9       insert direction: ^ (up)
 ❚|❚|❚|❚|❚ ...   each row has 0.6mm interval
 |❚|❚|❚|❚ ...
  2 4 6 8 
 ```
 - --
 
-## Availability Test
-1. Since this LCM need external capacitor connected, a PCB is made to convert connector to FPGA, include power management.
 
-< TO BE CONTINUED >
+## PCB Design Suggestion for Testing
 
-2. The test method of availability is to show color flow gradient animation.
-
-< TO BE CONTINUED >
+1. It's more convenient to modify FPC connector soldering pads for hand-soldering. Too short or thin pads will cause soldering iron break the connector or unable to solder on.
+2. Using cheap CPLD to generate signal is viable, which is not performed in this project.
 
 - --
 
@@ -61,28 +67,37 @@ The part number of Mating connector is not shown in specification sheet. This pr
 2. Initialize LCM with commands.
 3. Start data transmission.
 
+* Caution: The SPI initialization will only take effect after HSYNC signal starts.
+* To make sure initializaiton works, read registers after wrote them by Half-Duplex SPI transmission.
+* For more init commands, refer to AUO A030DW01 V0 Specification sheet.
+
 - --
 ## Misc
 
 ### LCM Optical Characteristics
 
 ```
-AUO - A030DW02 V0 (Part-No. 59.03A33.001)
+AUO - A030DW0x
 
 Pixel-Arrangement  | Panel-Type | Color-Depth
 -------------------------------------------------
 RGB delta          | TN         | 8-bit(16.2M)
 
 
-Contrast | Color-Chromaticity | Backlight
+Contrast | Color-Chromaticity            | Backlight
 -------------------------------------------------
-300:1    | unknown            | 500 nits
+300:1    | unknown, better than 50% NTSC | 500 nits
 ```
 
 ### Knowledge Bases of Concepts
-1. AUO UPS051/052 YUV720/640 CCIR656
+1. AUO UPS051
 
-< TO BE CONTINUED >
+AUO UPS051 is a type of RGB interface, but with 8-bit data lines and 3 times of PCLK freq. This is a non-interlaced LCD parallel interface, but lines indexed at odd number receives 1 color data ahead of even lines, because his screen has RGB-Delta pixel arrangement, therefore RGB data output at odd lines from FPGA/CPLD should shift 8 bits.
+```
+line 1,3,5,...  R G B R G B R G B R G B ...
+line 2,4,6,...  G B R G B R G B R G B R ...
+```
+RGB data of odd lines should be right after even lines(generate one frame from lines 0,1,2,...to VACT), rather than generating one frame of odd lines then another frame of even lines described in spec sheet.
 
 2. MIPI DPI
 
