@@ -1,40 +1,37 @@
-# Parallel-Interface LCD Driver for AUO A030DW01/02 using FPGA
+# Driving "UPS05x"(parallel RGB) LCD(AUO A030DW01/02) using FPGA
 
-This project is managing to drive LCD(AUO A030DW01 03a16 and A030DW02 03a33) using Altera Cyclone IV EP4CE10F17C8N FPGA.<br>
-The two types of LCD will be called as `A030DW0x` below.<br>
+This project is driving LCD(AUO A030DW01-03a16 and A030DW02-03a33) using Altera Cyclone IV EP4CE10F17C8N FPGA.<br>
+The two types of LCD will be called as `A030DW0x` in the project.<br>
 
 <img src="monazite-logo-lofi.png" width=80><br>
 Author: jlywxy (jlywxy@outlook.com)<br>
-Document Version: 1.1
+Document Version: 1.1r1
 
 - --
 
-## Availability
+## Intention of the project
 
 1. The test method of availability in this project is to show color gradient.<br>
 
 <img src="demo1.png" width=200><br>
 
-2. Since this LCM need external capacitor connected, a PCB is made to convert connector to FPGA, include power management.<br>(For schematic pdf, look into directory <a href="pcb">pcb</a>)<br>
+2. A PCB is made to engage the connection to FPGA, including power management and capacitors for LCD configuration.<br>(For schematic pdf, look into directory <a href="pcb">pcb</a>)<br>
 <img src="pcb-schematic.png" width=200>
 <img src="pcb-image.png" width=200><br>
 
 - --
 
-## Overview of the LCM Interface 
+## Overview of the LCD Module
 
 ### 1. Display Interface
 
 A030DW01 and A030DW02 shares the same info of specification document.<br>
 This LCM supports different interfaces: UPS051/052(8-bit RGB), CCIR656, YUV720/640.
-```
-AUO - A030DW0x
 
-Electrical-Level       | Speed         | Wires
---------------------------------------------------
-3.3v-TTL with 3.3v VDD | 24.535/27 MHz | SPI+[HSYNC+VSYNC+CLK+DATA8]
+|Signal Electrical-Level       | Speed         | Signal Wires| Power Supply
+|-----------------------|----------------|-----------|-|
+|3.3v-TTL | 24.535/27 MHz | SPI(SCL, SDA), RGB(HSYNC, VSYNC, 8 data)|3.3v
 
-```
 
 ### 2. Backlight Interface
 
@@ -44,11 +41,12 @@ This LCM requires 9.6v single power with 20mA current with selectable internal b
 
 The part number of Mating connector is not shown in specification sheet. This project is using FH26W of Hirose connector, which has 39pin with crossed 0.3mm interval and bottom contact surface.
 ```
-==============
+-----------------
 1 3 5 7 9       insert direction: ^ (up)
 ❚|❚|❚|❚|❚ ...   each row has 0.6mm interval
 |❚|❚|❚|❚ ...
  2 4 6 8 
+-----------------
 ```
 - --
 
@@ -74,20 +72,18 @@ The part number of Mating connector is not shown in specification sheet. This pr
 - --
 ## Misc
 
-### LCM Optical Characteristics
-
-```
-AUO - A030DW0x
-
-Pixel-Arrangement  | Panel-Type | Color-Depth
--------------------------------------------------
-RGB delta          | TN         | 8-bit(16.2M)
+### LCD Module Optical Characteristics
 
 
-Contrast | Color-Chromaticity            | Backlight
--------------------------------------------------
-300:1    | unknown, better than 50% NTSC | 500 nits
-```
+|Pixel-Arrangement  | Panel-Type | Color-Depth
+|-------------------|------------|------------------
+RGB delta          | TN         | 8-bit (16.2M)
+
+
+|Contrast | Color-Chromaticity            | Backlight
+|----------|-------------------------------|--------
+|300:1    | approx. 60% NTSC (not provided in spec) | 500 nits
+
 
 ### Knowledge Bases of Concepts
 1. AUO UPS051
@@ -125,3 +121,8 @@ RRRRRR RRRRGGGG GGGGGGBB BBBBBBBB (30 bits)
 
 * A abbreviation of Liquid Crystal Module, which includes LCD glass panel and backlight LEDs.
 
+### Document Patch and Errata
+
+* Fixed document format problem: charts.<br>
+
+patch above: jlywxy@2023.2.8<br>
